@@ -17,8 +17,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $usuario_id = $_SESSION["id"];
 
     $stmt = $conn->prepare("INSERT INTO tareas(usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt = $conn->bind_param("isssss", $usuario_id, $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento);
-
+    $stmt->bind_param("isssss", $usuario_id, $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento);
     if($stmt->execute()){
         header("Location: ver.php");
         exit;
