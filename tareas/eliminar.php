@@ -14,5 +14,5 @@ $stmt->bind_param("ii", $id, $_SESSION['id']);
 $stmt->execute();
 $stmt->close();
 
-header("Location: ver.php");
+header("Location: listar.php");
 exit;

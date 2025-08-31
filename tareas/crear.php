@@ -14,16 +14,16 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $estado = $_POST["estado"];
     $prioridad = $_POST["prioridad"];
     $fecha_vencimiento = $_POST["fecha_vencimiento"];
+    $etiquetas = trim($_POST["etiquetas"]); // Nuevo campo
     $usuario_id = $_SESSION["id"];
 
-    $stmt = $conn->prepare("INSERT INTO tareas(usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssss", $usuario_id, $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento);
+    $stmt = $conn->prepare("INSERT INTO tareas(usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento, etiquetas) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issssss", $usuario_id, $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas);
     if($stmt->execute()){
-        header("Location: ver.php");
+        header("Location: listar.php"); // Redirige a la página principal de tareas
         exit;
     } else {
         $error = "Error al crear la tarea.";
-
     }
     $stmt->close();
 }  
@@ -72,8 +72,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             <label class="form-label">Fecha de Vencimiento</label>
             <input type="date" name="fecha_vencimiento" class="form-control">
         </div>
+        <div class="mb-3">
+            <label class="form-label">Etiquetas (separadas por coma)</label>
+            <input type="text" name="etiquetas" class="form-control" placeholder="ej: trabajo, urgente">
+        </div>
         <button type="submit" class="btn btn-primary">Crear</button>
-        <a href="ver.php" class="btn btn-secondary">Cancelar</a>
+        <a href="listar.php" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 </body>

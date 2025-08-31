@@ -1,46 +1,36 @@
 <?php
 include("../includes/conexion.php");
 
-// CAPTURAR LOS FILTROS
-$estado    = isset($_GET["estado"]) ? $_GET["estado"] : "";
+// Capturar los filtros
+$estado = isset($_GET["estado"]) ? $_GET["estado"] : "";
 $prioridad = isset($_GET["prioridad"]) ? $_GET["prioridad"] : "";
-$fecha     = isset($_GET["fecha"]) ? $_GET["fecha"] : "";
-$etiqueta  = isset($_GET["etiqueta"]) ? $_GET["etiqueta"] : "";
+$fecha = isset($_GET["fecha"]) ? $_GET["fecha"] : "";
+$etiqueta = isset($_GET["etiqueta"]) ? $_GET["etiqueta"] : "";
 
-// CONSULTA DINÁMICA
+// Consulta inicial
 $sql = "SELECT * FROM tareas WHERE 1=1";
-$params = [];
-$tipos = ""; // para bind_param
 
-if ($estado != "") {
-    $sql .= " AND estado = ?";
-    $params[] = $estado;
-    $tipos .= "s";
+if($estado != "") {
+    $sql .= " AND estado = '$estado'";
 }
-if ($prioridad != "") {
-    $sql .= " AND prioridad = ?";
-    $params[] = $prioridad;
-    $tipos .= "s";
+if($prioridad != "") {
+    $sql .= " AND prioridad = '$prioridad'";
 }
-if ($fecha != "") {
-    $sql .= " AND fecha_vencimiento = ?";
-    $params[] = $fecha;
-    $tipos .= "s";
+if($fecha != "") {
+    $sql .= " AND fecha_vencimiento = '$fecha'";
 }
-if ($etiqueta != "") {
-    $sql .= " AND etiquetas LIKE ?";
-    $params[] = "%$etiqueta%";
-    $tipos .= "s";
+if($etiqueta != "") {
+    $sql .= " AND etiquetas LIKE '%$etiqueta%'";
 }
 
-// PREPARAR Y EJECUTAR
-$stmt = $conn->prepare($sql);
-if ($params) {
-    $stmt->bind_param($tipos, ...$params);
+$result = $conn->query($sql);
+if(!$result){
+    die("Error en la consulta: " . $conn->error);
 }
-$stmt->execute();
-$result = $stmt->get_result();
+
+// Solo mostrar tareas reales
 $tareas = $result->fetch_all(MYSQLI_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -54,6 +44,10 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 
 <div class="container py-4">
     <h1 class="mb-4 text-center">Gestión de Tareas</h1>
+    <div class="mb-3 text-end">
+        <a href="crear.php" class="btn btn-sm btn-primary">Crear nueva tarea</a>
+        <a href="ver.php" class="btn btn-sm btn-primary">Ver mis tareas</a>
+    </div>
 
     <!-- Formulario de filtros -->
     <div class="card shadow-sm mb-4">
@@ -111,10 +105,11 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                         <th>Prioridad</th>
                         <th>Fecha vencimiento</th>
                         <th>Etiquetas</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (count($tareas) > 0): ?>
+                    <?php if(count($tareas) > 0): ?>
                         <?php foreach ($tareas as $t): ?>
                         <tr>
                             <td><?= $t['id'] ?></td>
@@ -134,15 +129,24 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                             </td>
                             <td><?= $t['fecha_vencimiento'] ?></td>
                             <td><?= $t['etiquetas'] ?></td>
+                            <td>
+                                <a href="editar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
+                                <a href="eliminar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-danger">Eliminar</a>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">No se encontraron tareas con los filtros aplicados.</td>
+                            <td colspan="8" class="text-center text-muted">No se encontraron tareas.</td>
                         </tr>
                     <?php endif; ?>
+            
                 </tbody>
             </table>
+                    <div class="mb-3 d-flex justify-content-between">
+    <!-- Botón regresar -->
+    <a href="../index.php" class="btn btn-secondary">Regresar</a>
+</div>
         </div>
     </div>
 </div>

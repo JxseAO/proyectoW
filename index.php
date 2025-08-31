@@ -50,9 +50,9 @@ if (!isset($_SESSION['usuario'])) {
         <p>Desde aquí puedes gestionar tus tareas diarias de manera eficiente.</p>
 
         <div class="d-grid gap-3 mt-4">
-            <a href="tareas/ver.php" class="btn btn-primary btn-lg">Ver mis tareas</a>
-            <a href="tareas/crear.php" class="btn btn-success btn-lg">Crear nueva tarea</a>
-            <a href="#" class="btn btn-secondary btn-lg">Modo Claro/Oscuro</a> <!-- Puedes implementar toggle luego -->
+            <!-- Botón principal ahora apunta a listar.php -->
+            <a href="tareas/listar.php" class="btn btn-primary btn-lg">Ver mis tareas</a>
+            <a href="#" class="btn btn-secondary btn-lg">Modo Claro/Oscuro</a> <!-- Toggle opcional -->
         </div>
     </div>
 </div>

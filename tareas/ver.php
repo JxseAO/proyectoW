@@ -54,6 +54,7 @@ $res = $result->get_result();
         </tbody>
     </table>
     <a href="crear.php" class="btn btn-primary">Nueva Tarea</a>
+    <a href="listar.php" class="btn btn-primary">Regresar</a>
 </div>
 </body>
 </html>
