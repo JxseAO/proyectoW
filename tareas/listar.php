@@ -1,40 +1,46 @@
 <?php
-include("../config/conexion.php");
+include("../includes/conexion.php");
 
-//CAPUTURAR LOS FRILTOS
-$estado = isset($_GET["estado"]) ? $_GET["estado"] : " ";
-$prioridad = isset($_GET["prioridad"]) ? $_GET["prioridad"] : " ";
-$fecha = isset($_GET["fecha"]) ? $_GET["fecha"] : " ";
-$etiqueta = isset($_GET["etiqueta"]) ? $_GET["etiqueta"] : " ";
+// CAPTURAR LOS FILTROS
+$estado    = isset($_GET["estado"]) ? $_GET["estado"] : "";
+$prioridad = isset($_GET["prioridad"]) ? $_GET["prioridad"] : "";
+$fecha     = isset($_GET["fecha"]) ? $_GET["fecha"] : "";
+$etiqueta  = isset($_GET["etiqueta"]) ? $_GET["etiqueta"] : "";
 
-//CONSULTA DINAMICA
-$sql = "SELECT * FROM tareas WHERE 1=1"; // el 1=1 es para tener filtros dinamicos
+// CONSULTA DINÁMICA
+$sql = "SELECT * FROM tareas WHERE 1=1";
 $params = [];
+$tipos = ""; // para bind_param
 
-if($estado != "") {
-    $sql -= "AND estado = :estado";
-    $params[":estado"] = $estado;
-
+if ($estado != "") {
+    $sql .= " AND estado = ?";
+    $params[] = $estado;
+    $tipos .= "s";
 }
-if($prioridad != "") {
-    $sql -= "AND prioridad = :prioridad";
-    $params[":prioridad"] = $prioridad;
-
+if ($prioridad != "") {
+    $sql .= " AND prioridad = ?";
+    $params[] = $prioridad;
+    $tipos .= "s";
 }
-if($fecha != "") {
-    $sql -= "AND fecha_vencimiento = :fecha";
-    $params[":fecha"] = $fecha;
-
+if ($fecha != "") {
+    $sql .= " AND fecha_vencimiento = ?";
+    $params[] = $fecha;
+    $tipos .= "s";
 }
-if($etiqueta != "") {
-    $sql -= "AND etiquetas LIKE :etiqueta";
-    $params[":etiqueta"] = "%$etiqueta%";
-
+if ($etiqueta != "") {
+    $sql .= " AND etiquetas LIKE ?";
+    $params[] = "%$etiqueta%";
+    $tipos .= "s";
 }
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$tareas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// PREPARAR Y EJECUTAR
+$stmt = $conn->prepare($sql);
+if ($params) {
+    $stmt->bind_param($tipos, ...$params);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+$tareas = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -49,11 +55,9 @@ $tareas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="container py-4">
     <h1 class="mb-4 text-center">Gestión de Tareas</h1>
 
-    <!--formulario de los riltros-->
+    <!-- Formulario de filtros -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            Filtros de búsqueda
-        </div>
+        <div class="card-header bg-primary text-white">Filtros de búsqueda</div>
         <div class="card-body">
             <form method="GET" action="listar.php" class="row g-3">
                 <div class="col-md-3">
@@ -93,11 +97,9 @@ $tareas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <!-- tabla de los resultados-->
+    <!-- Tabla de resultados -->
     <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
-            Resultados
-        </div>
+        <div class="card-header bg-dark text-white">Resultados</div>
         <div class="card-body">
             <table class="table table-striped table-hover">
                 <thead class="table-dark">
