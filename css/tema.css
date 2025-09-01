@@ -1,0 +1,14 @@
+/* tema.css */ 
+.dark-mode { background-color: #121212 !important;
+     color: #f8f9fa !important;   
+
+} 
+.dark-mode .card {
+     background-color: #1e1e1e !important; 
+    color: #f8f9fa !important; 
+
+}
+ .dark-mode .table {
+      background-color: #1e1e1e !important; 
+    color: #121212 !important; 
+}

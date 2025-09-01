@@ -1,5 +1,6 @@
 <?php
 include("../includes/conexion.php");
+include("../includes/tema.php");
 
 // Capturar los filtros
 $estado = isset($_GET["estado"]) ? $_GET["estado"] : "";
@@ -30,20 +31,32 @@ if(!$result){
 
 // Solo mostrar tareas reales
 $tareas = $result->fetch_all(MYSQLI_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Lista de Tareas</title>
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Lista de Tareas</title>
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/tema.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="<?= $tema=='dark' ? 'dark-mode' : '' ?>">
+
+<nav class="navbar navbar-expand-lg <?= $tema=='dark' ? 'navbar-dark bg-dark' : 'navbar-dark bg-primary' ?>">
+  <div class="container">
+    <a class="navbar-brand" href="#">Gestion de tareas</a>
+    <div class="d-flex align-items-center ms-auto">
+      <div class="form-check form-switch m-0 d-flex align-items-center">
+        <input class="form-check-input" type="checkbox" id="modoToggle" <?= $tema=='dark'?'checked':'' ?>>
+        <label class="form-check-label ms-2 mb-0" for="modoToggle" style="color: inherit;">Tema</label>
+      </div>
+    </div>
+  </div>
+</nav>
 
 <div class="container py-4">
-    <h1 class="mb-4 text-center">Gestión de Tareas</h1>
+
     <div class="mb-3 text-end">
         <a href="crear.php" class="btn btn-sm btn-primary">Crear nueva tarea</a>
         <a href="ver.php" class="btn btn-sm btn-primary">Ver mis tareas</a>
@@ -51,7 +64,7 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 
     <!-- Formulario de filtros -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">Filtros de búsqueda</div>
+        <div class="card-header <?= $tema=='dark'?'bg-dark text-light':'bg-primary text-white' ?>">Filtros de búsqueda</div>
         <div class="card-body">
             <form method="GET" action="listar.php" class="row g-3">
                 <div class="col-md-3">
@@ -62,7 +75,6 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                         <option value="completada" <?= $estado=='completada'?'selected':'' ?>>Completada</option>
                     </select>
                 </div>
-
                 <div class="col-md-3">
                     <label for="prioridad" class="form-label">Prioridad</label>
                     <select name="prioridad" id="prioridad" class="form-select">
@@ -72,17 +84,14 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                         <option value="alta" <?= $prioridad=='alta'?'selected':'' ?>>Alta</option>
                     </select>
                 </div>
-
                 <div class="col-md-3">
                     <label for="fecha" class="form-label">Fecha de vencimiento</label>
                     <input type="date" name="fecha" id="fecha" class="form-control" value="<?= $fecha ?>">
                 </div>
-
                 <div class="col-md-3">
                     <label for="etiqueta" class="form-label">Etiqueta</label>
                     <input type="text" name="etiqueta" id="etiqueta" class="form-control" value="<?= $etiqueta ?>" placeholder="ej: trabajo">
                 </div>
-
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-success">Filtrar</button>
                     <a href="listar.php" class="btn btn-secondary">Limpiar</a>
@@ -93,10 +102,10 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 
     <!-- Tabla de resultados -->
     <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">Resultados</div>
+        <div class="card-header <?= $tema=='dark'?'bg-dark text-light':'bg-dark text-white' ?>">Resultados</div>
         <div class="card-body">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
+            <table class="table table-striped table-hover <?= $tema=='dark'?'table-dark':'' ?>">
+                <thead class="<?= $tema=='dark'?'table-dark':'table-dark' ?>">
                     <tr>
                         <th>ID</th>
                         <th>Título</th>
@@ -121,9 +130,7 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                                 </span>
                             </td>
                             <td>
-                                <span class="badge 
-                                    <?= $t['prioridad']=='alta'?'bg-danger':
-                                       ($t['prioridad']=='media'?'bg-info text-dark':'bg-secondary') ?>">
+                                <span class="badge <?= $t['prioridad']=='alta'?'bg-danger':($t['prioridad']=='media'?'bg-info text-dark':'bg-secondary') ?>">
                                     <?= ucfirst($t['prioridad']) ?>
                                 </span>
                             </td>
@@ -140,16 +147,17 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
                             <td colspan="8" class="text-center text-muted">No se encontraron tareas.</td>
                         </tr>
                     <?php endif; ?>
-            
                 </tbody>
             </table>
-                    <div class="mb-3 d-flex justify-content-between">
-    <!-- Botón regresar -->
-    <a href="../index.php" class="btn btn-secondary">Regresar</a>
-</div>
+
+            <div class="mb-3 d-flex justify-content-between">
+                <!-- Botón regresar -->
+                <a href="../index.php" class="btn btn-secondary">Regresar</a>
+            </div>
         </div>
     </div>
 </div>
 
+<script src="../js/tema.js"></script>
 </body>
 </html>

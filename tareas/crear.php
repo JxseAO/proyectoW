@@ -1,6 +1,7 @@
 <?php
 session_start();
 include("../includes/conexion.php");
+include("../includes/tema.php");
 
 if(!isset($_SESSION["id"])){
     header("Location: ../auth/login.php");
@@ -14,13 +15,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $estado = $_POST["estado"];
     $prioridad = $_POST["prioridad"];
     $fecha_vencimiento = $_POST["fecha_vencimiento"];
-    $etiquetas = trim($_POST["etiquetas"]); // Nuevo campo
+    $etiquetas = trim($_POST["etiquetas"]);
     $usuario_id = $_SESSION["id"];
 
     $stmt = $conn->prepare("INSERT INTO tareas(usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento, etiquetas) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("issssss", $usuario_id, $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas);
     if($stmt->execute()){
-        header("Location: listar.php"); // Redirige a la página principal de tareas
+        header("Location: listar.php");
         exit;
     } else {
         $error = "Error al crear la tarea.";
@@ -35,15 +36,30 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crear Tarea</title>
 <link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/tema.css" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <h2>Crear Nueva Tarea</h2>
+<body class="<?= $tema=='dark' ? 'dark-mode' : '' ?> <?= $tema=='dark' ? 'bg-dark text-light' : 'bg-light text-dark' ?>">
 
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg <?= $tema=='dark' ? 'navbar-dark bg-dark' : 'navbar-dark bg-primary' ?>">
+  <div class="container">
+    <a class="navbar-brand" href="#">Crear nueva tarea</a>
+    <div class="d-flex align-items-center ms-auto">
+      <div class="form-check form-switch m-0 d-flex align-items-center">
+        <input class="form-check-input" type="checkbox" id="modoToggle" <?= $tema=='dark'?'checked':'' ?>>
+        <label class="form-check-label ms-2 mb-0" for="modoToggle" style="color: inherit;">Tema</label>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Formulario -->
+<div class="container mt-5">
+    
     <?php if($error): ?>
         <div class="alert alert-danger"><?= $error ?></div>
     <?php endif; ?>
-
     <form method="POST">
         <div class="mb-3">
             <label class="form-label">Título</label>
@@ -80,5 +96,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         <a href="listar.php" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+<script src="../js/tema.js"></script>
 </body>
 </html>

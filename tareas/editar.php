@@ -1,6 +1,7 @@
 <?php
 session_start();
 include("../includes/conexion.php");
+include("../includes/tema.php");
 
 if(!isset($_SESSION['id'])){
     header("Location: ../auth/login.php");
@@ -25,7 +26,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $estado = $_POST["estado"];
     $prioridad = $_POST["prioridad"];
     $fecha_vencimiento = $_POST["fecha_vencimiento"];
-    $etiquetas = trim($_POST["etiquetas"]); // Nuevo campo
+    $etiquetas = trim($_POST["etiquetas"]);
 
     $stmt = $conn->prepare("UPDATE tareas SET titulo=?, descripcion=?, estado=?, prioridad=?, fecha_vencimiento=?, etiquetas=? WHERE id=? AND usuario_id=?");
     $stmt->bind_param("ssssssii", $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas, $id, $_SESSION['id']);
@@ -47,10 +48,24 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editar Tarea</title>
 <link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/tema.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="<?= $tema=='dark' ? 'dark-mode' : '' ?>">
+
+<nav class="navbar navbar-expand-lg <?= $tema=='dark' ? 'navbar-dark bg-dark' : 'navbar-dark bg-primary' ?>">
+  <div class="container">
+    <a class="navbar-brand" href="#">Editar Tareas</a>
+    <div class="d-flex align-items-center ms-auto">
+      <div class="form-check form-switch m-0 d-flex align-items-center">
+        <input class="form-check-input" type="checkbox" id="modoToggle" <?= $tema=='dark'?'checked':'' ?>>
+        <label class="form-check-label ms-2 mb-0" for="modoToggle" style="color: inherit;">Modo Oscuro</label>
+      </div>
+    </div>
+  </div>
+</nav>
+
 <div class="container mt-5">
-    <h2>Editar Tarea</h2>
+   
 
     <?php if($error): ?>
         <div class="alert alert-danger"><?= $error ?></div>
@@ -92,5 +107,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         <a href="listar.php" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+<script src="../js/tema.js"></script>
 </body>
 </html>
