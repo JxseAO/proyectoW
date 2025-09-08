@@ -1,19 +1,25 @@
-const toggle = document.getElementById('modoToggle');
+document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("modoToggle");
+    if (!toggle) return;
 
-toggle.addEventListener('change', () => {
-    const modo = toggle.checked ? 'dark' : 'light';
-    document.body.classList.toggle('dark-mode', toggle.checked);
+    // Activar toggle si el body tiene clase dark-mode
+    if (document.body.classList.contains("dark-mode")) {
+        toggle.checked = true;
+    }
 
-    // Guardar preferencia por usuario en BD
-    fetch('../includes/guardar_tema.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `tema=${modo}`
+    toggle.addEventListener("change", () => {
+        const tema = toggle.checked ? "dark" : "light";
+        document.body.classList.toggle("dark-mode", tema === "dark");
+
+        // Cambiar label también
+        const label = toggle.nextElementSibling;
+        if(label) label.textContent = tema === "dark" ? "Oscuro" : "Claro";
+
+        // Guardar tema vía AJAX
+        fetch("includes/guardar_tema.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "tema=" + tema
+        });
     });
 });
-
-// Aplicar tema al cargar la página según la variable PHP
-if('<?= $tema ?>' === 'dark'){
-    document.body.classList.add('dark-mode');
-    toggle.checked = true;
-}

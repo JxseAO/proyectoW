@@ -1,4 +1,5 @@
 <?php
+session_start();
 include("../includes/conexion.php");
 include("../includes/tema.php");
 
@@ -41,7 +42,7 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 <link href="../css/bootstrap.min.css" rel="stylesheet">
 <link href="../css/tema.css" rel="stylesheet">
 </head>
-<body class="<?= $tema=='dark' ? 'dark-mode' : '' ?>">
+<body class="<?= $tema == 'dark' ? 'dark-mode' : '' ?>">
 
 <nav class="navbar navbar-expand-lg <?= $tema=='dark' ? 'navbar-dark bg-dark' : 'navbar-dark bg-primary' ?>">
   <div class="container">
