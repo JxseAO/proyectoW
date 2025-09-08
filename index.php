@@ -51,7 +51,7 @@ if (!isset($_SESSION['usuario'])) {
 
         <!-- Logout -->
         <li class="nav-item">
-          <a class="nav-link btn btn-danger ms-2 text-white" href="../auth/login.php">
+          <a class="nav-link btn btn-danger ms-2 text-white" href="../ProyectoW/auth/login.php">
             Cerrar sesión
           </a>
         </li>
