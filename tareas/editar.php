@@ -10,14 +10,11 @@ if(!isset($_SESSION['id'])){
 
 $error = "";
 $id = $_GET['id'] ?? null;
+$id = intval($id);
 
-// Traer los datos de la tarea, incluyendo etiquetas
-$stmt = $conn->prepare("SELECT titulo, descripcion, estado, prioridad, fecha_vencimiento, etiquetas FROM tareas WHERE id = ? AND usuario_id = ?");
-$stmt->bind_param("ii", $id, $_SESSION['id']);
-$stmt->execute();
-$stmt->bind_result($titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas);
-$stmt->fetch();
-$stmt->close();
+if(!$id){
+    die("ID no válido");
+}
 
 // Procesar el POST para actualizar
 if($_SERVER["REQUEST_METHOD"] === "POST"){
@@ -28,7 +25,9 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $fecha_vencimiento = $_POST["fecha_vencimiento"];
     $etiquetas = trim($_POST["etiquetas"]);
 
-    $stmt = $conn->prepare("UPDATE tareas SET titulo=?, descripcion=?, estado=?, prioridad=?, fecha_vencimiento=?, etiquetas=? WHERE id=? AND usuario_id=?");
+    $stmt = $conn->prepare("UPDATE tareas 
+                            SET titulo=?, descripcion=?, estado=?, prioridad=?, fecha_vencimiento=?, etiquetas=? 
+                            WHERE id=? AND usuario_id=?");
     $stmt->bind_param("ssssssii", $titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas, $id, $_SESSION['id']);
 
     if($stmt->execute()){
@@ -39,8 +38,20 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     }
     $stmt->close();
 }
-?>
 
+// Traer los datos de la tarea, incluyendo etiquetas
+$stmt = $conn->prepare("SELECT titulo, descripcion, estado, prioridad, fecha_vencimiento, etiquetas 
+                        FROM tareas WHERE id = ? AND usuario_id = ?");
+$stmt->bind_param("ii", $id, $_SESSION['id']);
+$stmt->execute();
+$stmt->bind_result($titulo, $descripcion, $estado, $prioridad, $fecha_vencimiento, $etiquetas);
+
+if(!$stmt->fetch()){
+    $stmt->close();
+    die("Tarea no encontrada o no tienes permisos para editarla");
+}
+$stmt->close();
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -65,8 +76,6 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 </nav>
 
 <div class="container mt-5">
-   
-
     <?php if($error): ?>
         <div class="alert alert-danger"><?= $error ?></div>
     <?php endif; ?>
@@ -97,7 +106,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         </div>
         <div class="mb-3">
             <label class="form-label">Fecha de Vencimiento</label>
-            <input type="date" name="fecha_vencimiento" class="form-control" value="<?= $fecha_vencimiento ?>">
+            <input type="date" name="fecha_vencimiento" class="form-control" value="<?= htmlspecialchars($fecha_vencimiento) ?>">
         </div>
         <div class="mb-3">
             <label class="form-label">Etiquetas (separadas por coma)</label>

@@ -3,36 +3,45 @@ session_start();
 include("../includes/conexion.php");
 include("../includes/tema.php");
 
+// Capturar filtros
+$estado    = $_GET["estado"] ?? "";
+$prioridad = $_GET["prioridad"] ?? "";
+$fecha     = $_GET["fecha"] ?? "";
+$etiqueta  = $_GET["etiqueta"] ?? "";
 
-// Capturar los filtros
-$estado = isset($_GET["estado"]) ? $_GET["estado"] : "";
-$prioridad = isset($_GET["prioridad"]) ? $_GET["prioridad"] : "";
-$fecha = isset($_GET["fecha"]) ? $_GET["fecha"] : "";
-$etiqueta = isset($_GET["etiqueta"]) ? $_GET["etiqueta"] : "";
 
-// Consulta inicial
-$sql = "SELECT * FROM tareas WHERE 1=1";
+// Construir consulta segura
+$sql = "SELECT * FROM tareas WHERE usuario_id = ?";
+$params = [$_SESSION['id']];
+$types  = "i"; // primer parámetro es entero (usuario_id)
 
 if($estado != "") {
-    $sql .= " AND estado = '$estado'";
+    $sql .= " AND estado = ?";
+    $params[] = $estado;
+    $types   .= "s";
 }
 if($prioridad != "") {
-    $sql .= " AND prioridad = '$prioridad'";
+    $sql .= " AND prioridad = ?";
+    $params[] = $prioridad;
+    $types   .= "s";
 }
 if($fecha != "") {
-    $sql .= " AND fecha_vencimiento = '$fecha'";
+    $sql .= " AND fecha_vencimiento = ?";
+    $params[] = $fecha;
+    $types   .= "s";
 }
 if($etiqueta != "") {
-    $sql .= " AND etiquetas LIKE '%$etiqueta%'";
+    $sql .= " AND etiquetas LIKE ?";
+    $params[] = "%$etiqueta%";
+    $types   .= "s";
 }
 
-$result = $conn->query($sql);
-if(!$result){
-    die("Error en la consulta: " . $conn->error);
-}
-
-// Solo mostrar tareas reales
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$result = $stmt->get_result();
 $tareas = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -47,7 +56,7 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 
 <nav class="navbar navbar-expand-lg <?= $tema=='dark' ? 'navbar-dark bg-dark' : 'navbar-dark bg-primary' ?>">
   <div class="container">
-    <a class="navbar-brand" href="#">Gestion de tareas</a>
+    <a class="navbar-brand" href="#">Gestión de Tareas</a>
     <div class="d-flex align-items-center ms-auto">
       <div class="form-check form-switch m-0 d-flex align-items-center">
         <input class="form-check-input" type="checkbox" id="modoToggle" <?= $tema=='dark'?'checked':'' ?>>
@@ -65,9 +74,20 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
     </div>
 <?php endif; ?>
 
+    <!-- Mensajes -->
+    <?php if(isset($_GET['msg'])): ?>
+        <?php if($_GET['msg'] == 'creada'): ?>
+            <div class="alert alert-success">✅ Tarea creada con éxito.</div>
+        <?php elseif($_GET['msg'] == 'editada'): ?>
+            <div class="alert alert-info">✏️ Tarea editada correctamente.</div>
+        <?php elseif($_GET['msg'] == 'eliminada'): ?>
+            <div class="alert alert-danger">🗑️ Tarea eliminada.</div>
+        <?php endif; ?>
+    <?php endif; ?>
+
     <div class="mb-3 text-end">
-        <a href="crear.php" class="btn btn-sm btn-primary">Crear nueva tarea</a>
-        <a href="ver.php" class="btn btn-sm btn-primary">Ver mis tareas</a>
+        <a href="crear.php" class="btn btn-sm btn-primary">➕ Crear nueva tarea</a>
+        <a href="ver.php" class="btn btn-sm btn-secondary">📋 Ver mis tareas</a>
     </div>
 <?php
 $hoy = date("Y-m-d");
@@ -90,7 +110,7 @@ if($resVencidas && $resVencidas->num_rows > 0): ?>
     </div>
 <?php endif; ?>
 
-    <!-- Formulario de filtros -->
+    <!-- Filtros -->
     <div class="card shadow-sm mb-4">
         <div class="card-header <?= $tema=='dark'?'bg-dark text-light':'bg-primary text-white' ?>">Filtros de búsqueda</div>
         <div class="card-body">
@@ -121,19 +141,19 @@ if($resVencidas && $resVencidas->num_rows > 0): ?>
                     <input type="text" name="etiqueta" id="etiqueta" class="form-control" value="<?= $etiqueta ?>" placeholder="ej: trabajo">
                 </div>
                 <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-success">Filtrar</button>
-                    <a href="listar.php" class="btn btn-secondary">Limpiar</a>
+                    <button type="submit" class="btn btn-success">🔍 Filtrar</button>
+                    <a href="listar.php" class="btn btn-secondary">❌ Limpiar</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Tabla de resultados -->
+    <!-- Resultados -->
     <div class="card shadow-sm">
         <div class="card-header <?= $tema=='dark'?'bg-dark text-light':'bg-dark text-white' ?>">Resultados</div>
         <div class="card-body">
             <table class="table table-striped table-hover <?= $tema=='dark'?'table-dark':'' ?>">
-                <thead class="<?= $tema=='dark'?'table-dark':'table-dark' ?>">
+                <thead class="table-dark">
                     <tr>
                         <th>ID</th>
                         <th>Título</th>
@@ -150,8 +170,8 @@ if($resVencidas && $resVencidas->num_rows > 0): ?>
                         <?php foreach ($tareas as $t): ?>
                         <tr>
                             <td><?= $t['id'] ?></td>
-                            <td><?= $t['titulo'] ?></td>
-                            <td><?= $t['descripcion'] ?></td>
+                            <td><?= htmlspecialchars($t['titulo']) ?></td>
+                            <td><?= htmlspecialchars($t['descripcion']) ?></td>
                             <td>
                                 <span class="badge <?= $t['estado']=='pendiente'?'bg-warning text-dark':'bg-success' ?>">
                                     <?= ucfirst($t['estado']) ?>
@@ -163,10 +183,10 @@ if($resVencidas && $resVencidas->num_rows > 0): ?>
                                 </span>
                             </td>
                             <td><?= $t['fecha_vencimiento'] ?></td>
-                            <td><?= $t['etiquetas'] ?></td>
+                            <td><?= htmlspecialchars($t['etiquetas']) ?></td>
                             <td>
-                                <a href="editar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
-                                <a href="eliminar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-danger">Eliminar</a>
+                                <a href="editar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                <a href="eliminar.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar esta tarea?')">🗑️ Eliminar</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -179,8 +199,7 @@ if($resVencidas && $resVencidas->num_rows > 0): ?>
             </table>
 
             <div class="mb-3 d-flex justify-content-between">
-                <!-- Botón regresar -->
-                <a href="../index.php" class="btn btn-secondary">Regresar</a>
+                <a href="../index.php" class="btn btn-secondary">⬅️ Regresar</a>
             </div>
         </div>
     </div>
