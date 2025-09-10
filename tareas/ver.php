@@ -71,6 +71,8 @@ $res = $result->get_result();
     <div class="mt-3">
         <a href="crear.php" class="btn btn-primary">Nueva Tarea</a>
         <a href="listar.php" class="btn btn-secondary">Regresar</a>
+        <a href="exportar_pdf.php" class="btn btn-danger">Exportar PDF</a>
+
     </div>
 </div>
 

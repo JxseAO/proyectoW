@@ -3,6 +3,7 @@ session_start();
 include("../includes/conexion.php");
 include("../includes/tema.php");
 
+
 // Capturar los filtros
 $estado = isset($_GET["estado"]) ? $_GET["estado"] : "";
 $prioridad = isset($_GET["prioridad"]) ? $_GET["prioridad"] : "";
@@ -57,11 +58,37 @@ $tareas = $result->fetch_all(MYSQLI_ASSOC);
 </nav>
 
 <div class="container py-4">
+<?php if(isset($_GET["success"])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✅ Tarea creada exitosamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
     <div class="mb-3 text-end">
         <a href="crear.php" class="btn btn-sm btn-primary">Crear nueva tarea</a>
         <a href="ver.php" class="btn btn-sm btn-primary">Ver mis tareas</a>
     </div>
+<?php
+$hoy = date("Y-m-d");
+$mañana = date("Y-m-d", strtotime("+1 day"));
+
+$sqlVencidas = "SELECT * FROM tareas 
+                WHERE estado='pendiente' 
+                AND (fecha_vencimiento='$hoy' OR fecha_vencimiento='$mañana')";
+$resVencidas = $conn->query($sqlVencidas);
+
+if($resVencidas && $resVencidas->num_rows > 0): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        ⚠️ Atención: tienes tareas próximas a vencer o que vencen hoy.
+        <ul>
+            <?php while($tv = $resVencidas->fetch_assoc()): ?>
+                <li><b><?= $tv['titulo'] ?></b> vence el <?= $tv['fecha_vencimiento'] ?></li>
+            <?php endwhile; ?>
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
     <!-- Formulario de filtros -->
     <div class="card shadow-sm mb-4">
