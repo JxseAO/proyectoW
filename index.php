@@ -61,7 +61,11 @@ $stmt->close();
       &#9776;
     </button>
 
-    <a class="navbar-brand" href="index.php">Mi Gestor de Tareas</a>
+    <a class="navbar-brand d-flex align-items-center" href="index.php">
+    <img src="img/logogestion4.png" alt="Logo" width="70" height="70" class="me-2">
+    Mi Gestor de Tareas
+</a>
+
 
     <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav d-flex align-items-center">
